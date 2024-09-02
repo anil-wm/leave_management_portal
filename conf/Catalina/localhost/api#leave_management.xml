@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context docBase="C:/Users/anilkumara_700057/wavemaker/LeaveManagement/src/main/webapp">
+  <Resources cacheMaxSize="10240">
+    <PreResources base="C:/Users/anilkumara_700057/wavemaker/LeaveManagement/target/classes" className="org.apache.catalina.webresources.DirResourceSet" webAppMount="/WEB-INF/classes"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/com/mysql/mysql-connector-j/9.0.0/mysql-connector-j-9.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/mysql-connector-j-9.0.0.jar"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/com/google/protobuf/protobuf-java/4.26.1/protobuf-java-4.26.1.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/protobuf-java-4.26.1.jar"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/org/slf4j/slf4j-api/2.0.7/slf4j-api-2.0.7.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/slf4j-api-2.0.7.jar"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/ch/qos/logback/logback-classic/1.4.12/logback-classic-1.4.12.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/logback-classic-1.4.12.jar"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/ch/qos/logback/logback-core/1.4.12/logback-core-1.4.12.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/logback-core-1.4.12.jar"/>
+    <PostResources base="C:/Users/anilkumara_700057/.m2/repository/org/json/json/20240303/json-20240303.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/json-20240303.jar"/>
+  </Resources>
+</Context>

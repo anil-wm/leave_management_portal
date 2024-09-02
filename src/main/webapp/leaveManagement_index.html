@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leave Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome for Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <link href="styles/style.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-light">
+
+      <div class="header d-flex justify-content-between align-items-center fixed-top">
+        <h1 class="ml-3">Leave Management</h1>
+
+        <button
+          type="button"
+          class="btn btn-danger mx-2"
+          data-toggle="modal"
+          data-target="#requestsModal"
+        >
+          Apply Leave
+        </button>
+
+
+        <img src="assets/images/profile-icon.jpg" class="account-icon" id="account-info" alt="Account Icon" data-toggle="modal" data-target="#accountModal">
+
+
+        <!-- <div class="dropdown">
+            <button
+              class="btn btn-info dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              My Account
+            </button>
+           -->
+            <!-- Dropdown Menu -->
+             <!-- 
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">employeeName</a>
+                <a class="dropdown-item" href="#">mailId</a>
+                <a class="dropdown-item" href="#">Reports to : Manager Name</a>
+                <a class="dropdown-item" href="#">Logout</a>
+            </div>
+        </div> -->
+    
+      </div>
+    </nav>
+
+
+     <!-- Modal -->
+     <div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="accountModalLabel">My Account </h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <p id="employeeName"> </p>
+                  <p id="employeeId">  </p>
+                  <p id="myEmailId"> </p>
+                  <p id="myMobileNumber"> </p>
+                  <p id="myMangerName"> </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="logout-btn" onclick="logout()">Logout</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+          <h2>Navigation</h2>
+        <ul class="nav flex-column sidebar-items">
+          
+            <li class="nav-item mb-3  mt-3 ">
+                <button class="btn btn-primary" id="DashboardButton" onclick="fetchDashboard()">Dashboard</button>
+            </li>
+            
+            <li class="nav-item mb-3">
+                <button class="btn btn-primary" id="myleavesButton" onclick="fetchMyLeaves()">My Leave Requests</button>
+            </li>
+
+            <li class="nav-item mb-3">
+                <button class="btn btn-primary" id = "myLeaveRequestsButton" onclick="fetchLeaveRequests()">Team Leave Requests</button>
+            </li>
+
+            <li class="nav-item mb-3">
+                <button class="btn btn-primary" id="holidaysButton" onclick="fetchUpcomingHolidays()">Holidays</button>
+                <div id="holidaysContainer" class="mt-2"></div>
+            </li>
+        </ul>
+    </div>
+    
+  
+        
+      <div class="container welcome-container">
+        <div class="row">
+            <div class="col-md-12 text-center welcome-header">
+                <h1>Welcome to the Leave Management Portal</h1>
+                <p class="lead">Your one-stop solution for managing leave requests and tracking employee leave balances.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="welcome-card">
+                    <h2>Hello, <span id="userName"> </span>!</h2>
+                    <p>We're glad to have you here. From this portal, you can:</p>
+                    <ul>
+                        <li>View and manage your leave requests.</li>
+                        <li>Check your leave balance.</li>
+                        <li>Request for leave.</li>
+                        <li>Holidays.</li>
+                    </ul>
+                    <p>Use the navigation menu to explore the portal and manage your leave effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+  <!-- Content Area -->
+  <div class="content">
+        <h2 id="Welcome-title"></h2>
+        <div id="content-container">
+            <h2 id="content-title" class="mt-5"> </h2>
+            <table id="leaves-list" class="table table-bordered">
+              <thead></thead>
+                <tbody>
+                  <!-- Rows will be inserted dynamically -->
+                </tbody>
+              </table>
+              
+              
+            </div>
+          </div>
+          
+
+    <!-- Modal for Leave Request -->
+    <div
+      class="modal fade"
+      id="requestsModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="requestsModalLabel"
+      aria-hidden="true"
+    >
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestsModalLabel">Leave Request</h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="leave-request" class="table">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <label><b>Leave Type</b></label> <br />
+                                    <select class="col-md-6 mx-1 rounded-pill" id="leaveType" required>
+                                        <option value="" disabled selected>Select Leave Type</option>
+                                        <option value="Sick leave">Sick leave</option>
+                                        <option value="Paid leave">Paid leave</option>
+                                        <option value="Paternity Leave">Paternity Leave</option>
+                                        <option value="Maternity Leave">Maternity Leave</option>
+                                        <option value="Annual Leave">Annual Leave</option>
+                                        <option value="Emergency Leave">Emergency Leave</option>
+                                        <option value="Casual Leave">Casual Leave</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label><b>From Date</b></label> <br />
+                                    <input
+                                      class="rounded-pill"
+                                      type="date"
+                                      id="fromDate"
+                                      required
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label><b>To Date</b></label> <br />
+                                    <input
+                                      class="mx-1 rounded-pill"
+                                      type="date"
+                                      id="toDate"
+                                      required
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label><b>Leave Description</b></label>
+                                    <textarea rows="3" cols="40" id="leaveDescription"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button
+                      class="mx-5 btn btn-primary rounded-pill justify-content-center"
+                      id="applyLeave"
+                    >
+                      Apply Leave
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Confirmation -->
+    <div
+      class="modal fade"
+      id="exampleModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Are you sure ..??</h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-text">Confirm Reject</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirm-btn">
+                      Save changes
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- FontAwesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+
+    <!-- Bootstrap JS and Popper.js (required for dropdowns) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="scripts/script.js"></script>
+</body>
+</html>
