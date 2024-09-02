@@ -2,7 +2,7 @@ package com.wavemaker.leavemanagement.controller;
 
 import com.wavemaker.leavemanagement.service.impl.AuthenticationServiceImpl;
 
-import com.wavemaker.leavemanagement.service.impl.HolidaysServiceImpl;
+
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import org.json.JSONObject;
