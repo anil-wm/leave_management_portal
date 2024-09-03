@@ -8,7 +8,7 @@
 4. My Team leave requests
 5. Login and logout
 6. Holidays
-7. Dashboard ( for my leave summary UI pending)
+7. Dashboard ( for my leave summary )
 8. User cannot select past date
 
 
