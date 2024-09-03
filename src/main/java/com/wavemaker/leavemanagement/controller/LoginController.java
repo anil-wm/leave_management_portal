@@ -1,15 +1,15 @@
 package com.wavemaker.leavemanagement.controller;
 
 import com.wavemaker.leavemanagement.service.impl.AuthenticationServiceImpl;
-
-
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 
 
@@ -46,7 +46,7 @@ public class LoginController extends HttpServlet {
             logger.info("Path : {}", request.getContextPath());
 
             // Redirect
-            response.sendRedirect(request.getContextPath() + "/leaveManagement_index.html");
+            response.sendRedirect(request.getContextPath() + "/homepage.html");
         } else {
             // If authentication fails, prepare the JSON response
             response.setContentType("application/json");
@@ -62,7 +62,9 @@ public class LoginController extends HttpServlet {
         }
     }
 }
-//
+
+
+//  //   by using basic authentication
 //        String authenticationHeader = request.getHeader("Authorization");
 //        logger.info("getting authorization header {}",authenticationHeader);
 //

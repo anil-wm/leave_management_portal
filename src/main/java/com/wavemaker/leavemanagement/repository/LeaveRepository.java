@@ -11,4 +11,8 @@ public interface LeaveRepository {
     boolean requestLeave(int employeeId, Leave newLeave);
 
     String getMyLeavesSummary(int employeeId);
+
+    String leaveTakenByLeaveType(int employeeId, String leaveType);
+
+    String updateLeaveStatus(int leaveId, String statusOfLeave);
 }

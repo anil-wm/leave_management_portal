@@ -27,6 +27,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     private String getManagerName = "SELECT EMPLOYEE_NAME FROM EMPLOYEES WHERE EMPLOYEE_ID = ?";
 
+    private String employeeGenderByEmployeeId = "SELECT GENDER FROM EMPLOYEES WHERE EMPLOYEE_ID = ?";
+
     public EmployeeRepositoryImpl() {
         try {
             this.connection = DatabaseConnectionManager.getInstance().getConnection();
@@ -97,33 +99,49 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     public String getAccountDetails(String emailId) {
         JSONObject accountInfo = new JSONObject();
 
-        try{
+        try {
             PreparedStatement preparedStatement = null;
             ResultSet resultSet = null;
 
-            preparedStatement =  connection.prepareStatement(getAccountInfoQuery);
-            preparedStatement.setString(1,emailId);
+            preparedStatement = connection.prepareStatement(getAccountInfoQuery);
+            preparedStatement.setString(1, emailId);
             resultSet = preparedStatement.executeQuery();
             resultSet.next();
 
-            accountInfo.put("employeeName",resultSet.getString("EMPLOYEE_NAME"));
-            accountInfo.put("mobileNumber",resultSet.getString("PHONE_NUMBER"));
-            accountInfo.put("emailId",emailId);
-            accountInfo.put("employeeId",resultSet.getInt("EMPLOYEE_ID"));
-            accountInfo.put("gender",resultSet.getString("GENDER"));
+            accountInfo.put("employeeName", resultSet.getString("EMPLOYEE_NAME"));
+            accountInfo.put("mobileNumber", resultSet.getString("PHONE_NUMBER"));
+            accountInfo.put("emailId", emailId);
+            accountInfo.put("employeeId", resultSet.getInt("EMPLOYEE_ID"));
+            accountInfo.put("gender", resultSet.getString("GENDER"));
             preparedStatement = connection.prepareStatement(getManagerName);
-            preparedStatement.setInt(1,resultSet.getInt("MANAGER_ID"));
+            preparedStatement.setInt(1, resultSet.getInt("MANAGER_ID"));
             resultSet = preparedStatement.executeQuery();
             resultSet.next();
 
-            accountInfo.put("managerName",resultSet.getString("EMPLOYEE_NAME"));
+            accountInfo.put("managerName", resultSet.getString("EMPLOYEE_NAME"));
 
         } catch (SQLException e) {
-            logger.info("Exception occurred : {}",e.getMessage());
+            logger.info("Exception occurred : {}", e.getMessage());
             throw new RuntimeException(e);
         }
 
-        logger.info("Account information returned is {} ",accountInfo);
+        logger.info("Account information returned is {} ", accountInfo);
         return accountInfo.toString();
+    }
+
+    @Override
+    public String getEmployeeGenderByEmployeeId(int employeeId) {
+        String gender = "";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(employeeGenderByEmployeeId);
+            preparedStatement.setInt(1, employeeId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            gender = resultSet.getString("GENDER");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return gender;
     }
 }

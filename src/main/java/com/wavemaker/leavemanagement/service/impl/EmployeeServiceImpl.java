@@ -1,23 +1,30 @@
 package com.wavemaker.leavemanagement.service.impl;
 
-import com.wavemaker.leavemanagement.repository.impl.EmployeeRepositoryImpl;
+import com.wavemaker.leavemanagement.factory.RepositoryFactory;
+import com.wavemaker.leavemanagement.repository.EmployeeRepository;
 import com.wavemaker.leavemanagement.service.EmployeeService;
 
-public class EmployeeServiceImpl  implements EmployeeService {
+public class EmployeeServiceImpl implements EmployeeService {
 
+    private EmployeeRepository employeeRepository = null;
+
+
+    public EmployeeServiceImpl() {
+        employeeRepository = new RepositoryFactory().getEmployeeRepository("EmployeeRepository");
+    }
 
     @Override
     public String getEmployeeNameByEmployeeId(int employeeId) {
-        return new EmployeeRepositoryImpl().getEmployeeNameById(employeeId);
+        return employeeRepository.getEmployeeNameById(employeeId);
     }
 
     @Override
     public int getEmployeeIdByEmailId(String emailId) {
-        return new EmployeeRepositoryImpl().getEmployeeIdByEmailId(emailId);
+        return employeeRepository.getEmployeeIdByEmailId(emailId);
     }
 
     @Override
     public String getAccountInfo(String emailId) {
-        return new EmployeeRepositoryImpl().getAccountDetails(emailId);
+        return employeeRepository.getAccountDetails(emailId);
     }
 }

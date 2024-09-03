@@ -30,25 +30,20 @@ public class LogoutController extends HttpServlet {
             jsonResponse.put("message", "Successfully logged out");
             jsonResponse.put("status", "success");
 
-            // Send the JSON response
+
             response.getWriter().write(jsonResponse.toString());
             logger.info("response on success: {}", jsonResponse);
 
-            // Redirect the client after sending the JSON response
             response.setStatus(HttpServletResponse.SC_OK);
-//            response.getWriter().flush();
-//
-            logger.info(" path : {}",request.getContextPath());
-//            response.sendRedirect(request.getContextPath() + "/index.html");
+
+            logger.info(" path : {}", request.getContextPath());
         } else {
             jsonResponse.put("message", "Error logging out");
             jsonResponse.put("status", "error");
 
-            // Send the JSON response
             response.getWriter().write(jsonResponse.toString());
             logger.info("response on failure : {}", jsonResponse);
 
-            // Redirect the client after sending the JSON response
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().flush();
             response.sendRedirect(request.getContextPath() + "/login.html");

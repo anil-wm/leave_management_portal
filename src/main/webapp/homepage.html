@@ -27,7 +27,7 @@
 
         <button
           type="button"
-          class="btn btn-danger mx-2"
+          class="btn btn-primary mx-2"
           data-toggle="modal"
           data-target="#requestsModal"
         >
@@ -166,8 +166,8 @@
                                         <option value="" disabled selected>Select Leave Type</option>
                                         <option value="Sick leave">Sick leave</option>
                                         <option value="Paid leave">Paid leave</option>
-                                        <option value="Paternity Leave">Paternity Leave</option>
-                                        <option value="Maternity Leave">Maternity Leave</option>
+                                        <option id="paternityLeave" value="Paternity Leave">Paternity Leave</option>
+                                        <option id="maternityLeave" value="Maternity Leave">Maternity Leave</option>
                                         <option value="Annual Leave">Annual Leave</option>
                                         <option value="Emergency Leave">Emergency Leave</option>
                                         <option value="Casual Leave">Casual Leave</option>
@@ -216,6 +216,7 @@
                       type="button"
                       class="btn btn-secondary"
                       data-dismiss="modal"
+                      onclick="applyLeave()"
                     >
                       Cancel
                     </button>
@@ -224,47 +225,14 @@
         </div>
     </div>
 
-    <!-- Modal for Confirmation -->
-    <div
-      class="modal fade"
-      id="exampleModalCenter"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="exampleModalCenterTitle"
-      aria-hidden="true"
-    >
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Are you sure ..??</h5>
-                    <button
-                      type="button"
-                      class="close"
-                      data-dismiss="modal"
-                      aria-label="Close"
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p id="modal-text">Confirm Reject</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="confirm-btn">
-                      Save changes
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      data-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <div id="dialog" class="dialog">
+      <button type="button" class="close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+      </button>
+      <div id="employeeDetails"></div>
+      <button id="approveButton" class="btn btn-success">Approve</button>
+      <button id="rejectButton" class="btn btn-danger">Reject</button>
+  </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

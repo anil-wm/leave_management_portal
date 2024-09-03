@@ -1,103 +1,33 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-  // document.getElementById("content-title").textContent = "";
   const today = new Date();
   const dateString = today.toISOString().split("T")[0];
   document.getElementById("fromDate").setAttribute("min", dateString);
   document.getElementById("toDate").setAttribute("min", dateString);
 
+  const closeButton = document.querySelector('#dialog .close');
+  if (closeButton) {
+      closeButton.addEventListener('click', closeDialog);
+  }
+
   document.getElementById("account-info").addEventListener('click', displayAccounInfo());
-
-  const gender = "";
-  console.log(gender,"on load");
-  
-  const leaveTypeSelect = document.getElementById('leaveType');
-
-            // Function to update leave options based on gender
-            function updateLeaveOptions(gender) {
-                const paternityOption = leaveTypeSelect.querySelector('option[value="Paternity Leave"]');
-                const maternityOption = leaveTypeSelect.querySelector('option[value="Maternity Leave"]');
-
-                if (gender === 'Male') {
-                    paternityOption.style.display = '';
-                    maternityOption.style.display = 'none';
-                } else if (gender === 'Female') {
-                    paternityOption.style.display = 'none';
-                    maternityOption.style.display = '';
-                } else {
-                    paternityOption.style.display = '';
-                    maternityOption.style.display = '';
-                }
-            }
-
-  // const dashboardButton = document.getElementById("dashboardButton ");
-  // const myleavesButton = document.getElementById("myleavesButton");
-  // const myLeaveRequestsButton = document.getElementById("myLeaveRequestsButton");
-  // const holidaysButton = document.getElementById("holidaysButton");
-
-  // const welcomeContainer = document.querySelector(".welcome-container");
-
-  // // Function to hide the container
-  // function hideContainer() {
-  //     if (welcomeContainer) {
-  //         welcomeContainer.style.display = "none";
-  //     }
-  //     fetchDashboard();
-  // }
-
-  // // Add click event listener to the button
-  // if (dashboardButton) {
-  //   dashboardButton.addEventListener("click", hideContainer);
-
-  // }
-
-
-
-  // document.getElementById("logout-btn").addEventListener()
-
-  // document.getElementById("toDate").setAttribute("max",dateString+4);
-
-
-  // function openModal() {
-  //   $('#exampleModalCenter').modal('show');
-  // }
-
-
-
-  // const approveButtons = document.getElementsByClassName('approve-btn').addEventListener('click', handleButtonClick('approve'));
-  // const rejectButtons = document.getElementsByClassName('reject-btn').addEventListener('click', handleButtonClick('reject'));
-
-  // const modalText = document.getElementById('modal-text');
-  // const confirmButton = document.getElementById('confirm-btn');
-
-  // const showModal = document.getElementById('#exampleModalCenter')
-
-
-  // Function to handle button clicks
-  // function handleButtonClick(action) {
-  //   return function () {
-  //     if (action === 'approve') {
-  //       modalText.textContent = 'Confirm Approve';
-  //     } else if (action === 'reject') {
-  //       modalText.textContent = 'Confirm Reject';
-  //     }
-  //     document.getElementById('#exampleModalCenter').modal('show'); // Show modal
-  //   }
-  // }
 
 });
 
 
+function closeDialog() {
+  const dialog = document.getElementById('dialog');
+  if (dialog) {
+      dialog.style.display = 'none'; 
+  }
+}
 
-const leaveRequestsUrl = "http://localhost:8080/api/leave_management/my_team_leave_requests"; // API for leave requests
-// API for my leaves
 
 function fetchLeaveRequests() {
-
+  
+  const leaveRequestsUrl = "http://localhost:8080/api/leave_management/my_team_leave_requests";
 
   hideContainer();
-
-  // document.getElementsByClassName('content')[0].innerHTML = '';
 
   fetch(leaveRequestsUrl, {
     method: 'GET'
@@ -109,24 +39,22 @@ function fetchLeaveRequests() {
 
       const tableBody = document.querySelector('#leaves-list tbody');
 
-      tableBody.innerHTML = ''; // Clear existing rows
-
+      tableBody.innerHTML = ''; 
       // console.log(data);
-      
+
       if (data.length === 0) {
         tableBody.appendChild(displayNoData("Your are not a manager."));
       }
       else {
-        // document.getElementById("noDataImage").style.display = 'none !important';
         const tableHeader = document.createElement('tr');
         tableHeader.innerHTML = `
                   <th>Employee Name</th>
-                  <!-- <th id="leave-id">Leave ID</th> -->
+                 <!-- <th id="leave-id">Leave ID</th> -->
                   <th>Leave Type</th>
                   <th>From Date</th>
                   <th>To Date</th>
                   <th>Leave Description</th>
-                  <th>Status</th>
+                  <th id="statusOfLeave">Status</th>
                   <th>Action</th>
                   `;
 
@@ -134,35 +62,28 @@ function fetchLeaveRequests() {
 
         data.forEach(request => {
 
+          const daysRequested = calculateDaysBetween(request.fromDate, request.toDate);
+
           const row = document.createElement('tr');
           row.innerHTML = `
                       <td>${request.employeeName}</td>
-                      <!-- <td>${request.leaveId}</td> -->
+                     <!-- <td>${request.leaveId}</td> -->
                       <td>${request.leaveType}</td>
                       <td>${request.fromDate}</td>
                       <td>${request.toDate}</td>
                       <td>${request.leaveDescription}</td>
-                      <td>${request.statusOfLeave}</td>
+                      <td >${request.statusOfLeave}</td>
                       <td>
-                          <button class="btn btn-success btn-sm mb-2 approve-btn">Approve</button>
-                          <button class="btn btn-danger btn-sm reject-btn">Reject</button>
+                          <button class="btn btn-info btn-sm mb-2 action-btn" onClick="askForConfirmation('${request.leaveId}','${request.employeeId}','${request.leaveType}', '${daysRequested}')" >Action on leave</button>
                       </td>
                   `;
 
           tableBody.appendChild(row);
-          // Get the buttons for the current row
-          const approveButton = row.querySelector('.approve-btn');
-          const rejectButton = row.querySelector('.reject-btn');
-          // const leaveId = row.querySelector("#leave-id");
 
+          const actionButton = row.querySelector(".action-btn");
 
-
-          // leaveId.style.display = 'none';
-
-          // Hide buttons if status is not "Pending"
           if (request.statusOfLeave !== "Pending") {
-            approveButton.style.display = 'none';
-            rejectButton.style.display = 'none';
+            actionButton.style.display = 'none';
           }
 
         });
@@ -171,10 +92,98 @@ function fetchLeaveRequests() {
     .catch(error => console.error('Error fetching leave requests:', error));
 }
 
-const approveButton = document.getElementsByClassName("approve-btn");
-const rejectButton = document.getElementsByClassName("reject-btn");
+
+function calculateDaysBetween(fromDateStr, toDateStr) {
+  const fromDate = new Date(fromDateStr);
+  const toDate = new Date(toDateStr);
+  const msPerDay = 24 * 60 * 60 * 1000; 
+  const diffInMs = toDate - fromDate;
+  return Math.ceil(diffInMs / msPerDay); 
+}
 
 
+async function askForConfirmation(leaveId, employeeId, leaveType, daysRequested) {
+
+  console.log(employeeId, leaveType);
+
+  const data = {
+    employeeId,
+    leaveType
+  }
+
+  console.log(data);
+
+
+  try {
+
+    const queryString = new URLSearchParams(data).toString();
+
+    const response = await fetch(`http://localhost:8080/api/leave_management/askConfirmation?${queryString}`, {
+      method: 'GET'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching employee details: ${response.statusText}`);
+    }
+
+    const employeeLeave = await response.json();
+    console.log(employeeLeave);
+    const dialog = document.getElementById('dialog');
+    const detailsDiv = document.getElementById('employeeDetails');
+    detailsDiv.innerHTML = `
+        <p>Leave Type: ${employeeLeave.leaveType}</p>
+        <p>Days Taken: ${employeeLeave.leavesTaken}</p>
+        <p>Allowed Days: ${employeeLeave.allowedDays}</p>
+        <p>Days requesting : ${daysRequested}</p> 
+    `;
+    dialog.style.display = 'block';
+
+
+    document.getElementById('approveButton').addEventListener('click', () => {
+      updateStatus(leaveId, 'Approved');
+      dialog.style.display = 'none';
+    });
+
+
+    document.getElementById('rejectButton').addEventListener('click', () => {
+      updateStatus(leaveId, 'Rejected');
+      dialog.style.display = 'none';
+    });
+
+  } catch (error) {
+    console.error('Failed to fetch employee details:', error);
+    alert('An error occurred while fetching employee details. Please try again later.');
+  }
+
+}
+
+
+async function updateStatus(leaveId, status) {
+  console.log(leaveId, status);
+
+  try {
+
+    const response = await fetch(`http://localhost:8080/api/leave_management/my_leaves_tracker`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ leaveId, status })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error updating status: ${response.statusText}`);
+    }
+    console.log(response);
+
+    console.log(`Employee status updated to ${status}.`);
+    fetchLeaveRequests();
+
+  } catch (error) {
+    console.error('Failed to update employee status:', error);
+    alert('An error occurred while updating the status. Please try again later.');
+  }
+}
 
 
 const myLeavesUrl = 'http://localhost:8080/api/leave_management/my_leaves_tracker';
@@ -184,11 +193,6 @@ async function fetchMyLeaves() {
 
   hideContainer();
 
-  // const contentElement = document.getElementsByClassName('content')[0];
-  // console.log(contentElement);
-
-  // contentElement.innerHTML = '';
-
   try {
     const response = await fetch(myLeavesUrl, { method: 'GET' });
 
@@ -197,14 +201,14 @@ async function fetchMyLeaves() {
     }
 
     const data = await response.json();
-    console.log("data", data);
+    console.log(data);
 
-    
+
     document.getElementById("content-title").textContent = "My Leave Requests";
-    
+
     const tableBody = document.querySelector('#leaves-list tbody');
     tableBody.innerHTML = '';
-    
+
     if (data.length === 0) {
       tableBody.appendChild(displayNoData("No leave requests found"))
       // tableBody.innerHTML = '<tr><td colspan="5">No leave requests found</td></tr>';
@@ -238,7 +242,6 @@ async function fetchMyLeaves() {
   }
 }
 
-// Helper function to escape HTML characters
 function escapeHtml(text) {
   const map = {
     '&': '&amp;',
@@ -263,207 +266,35 @@ function getLeaveStatusIcon(status) {
 }
 
 
-document.getElementById("applyLeave").addEventListener("click", function (event) {
-  event.preventDefault(); // Prevent the default form submission
-
-  applyLeave(); // Call the login function
-});
-
-
-
-function applyLeave() {
-  const leaveType = document.getElementById("leaveType").value;
-  const fromDate = document.getElementById("fromDate").value;
-  const toDate = document.getElementById("toDate").value;
-  const leaveDescription = document.getElementById("leaveDescription").value;
-
-  if (!leaveType) {
-    // alert("Leave type cannot be empty");
-    return;
-  }
-
-  if (!fromDate || !toDate) {
-    // alert("Date cannot be empty");
-    return;
-  }
-
-  const now = new Date();
-  const currentDate = now.toISOString().split("T")[0];
-
-  if (toDate < currentDate) {
-    // alert("To date should be in the future, not in the past.");
-    return;
-  }
-
-  console.log("gender in apply leave",gender);
-  const leave = {
-    leaveType,
-    fromDate,
-    toDate,
-    leaveDescription,
-    appliedOn: currentDate,
-    statusOfLeave: "Pending"
-  };
-
-
-
-  console.log(JSON.stringify(leave));
-
-
-
-  fetch("api/leave_management/my_leaves_tracker", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(leave),
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Network response was not ok: ${text}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Success:", data);
-      // loadLeaves();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      // alert("There was an error processing your request. " + error.message);
-    });
-
-  // Clear form fields
-  document.getElementById("leaveType").value = "";
-  document.getElementById("fromDate").value = "";
-  document.getElementById("toDate").value = "";
-  document.getElementById("leaveDescription").value = "";
-
-}
-
-
-function fetchDashboard() {
-  hideContainer();
-
-  const dashboardUrl = "http://localhost:8080/api/leave_management/dashboard";
-  fetch( dashboardUrl, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json" // Headers should be an object
-    }
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`); // Use backticks for template literals
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log(data);
-  })
-
-
-  .catch(error => {
-    console.log(error);
-  })
-
-  document.getElementById("content-title").textContent = "My Leave Tracker";
-
-  const tableBody = document.querySelector('#leaves-list tbody');
-  tableBody.innerHTML = '';
-
-
-  // leavesData.innerHTML = ``;
-
-  // Create a container for the leave summary
-  const leaveSummary = document.createElement('tr');
-  // leaveSummary.className = 'container'; // Add a class for styling
-  // console.log("Created..!!");
-
-  // Define the leave types data
-  const leaveTypes = [
-    { type: 'Annual Leave', color: 'bg-success', progress: 60, total: '20', taken: '12' },
-    { type: 'Sick Leave', color: 'bg-warning', progress: 30, total: '10', taken: '3' },
-    { type: 'Casual Leave', color: 'bg-info', progress: 40, total: '15', taken: '7' },
-    { type: 'Maternity Leave', color: 'bg-danger', progress: 70, total: '90', taken: '63' },
-    { type: 'Paternity Leave', color: 'bg-primary', progress: 50, total: '10', taken: '5' },
-    { type: 'Emergency Leave', color: 'bg-secondary', progress: 40, total: '5', taken: '2' }
-  ];
-
-
-  // Build the HTML content for leave summary
-  // <h2 class="my-4">Leave Tracker</h2> 
-  leaveSummary.innerHTML = `
-      <div class="row">
-          ${leaveTypes.map(leave => `
-              <div class="col-md-6 col-lg-4">
-                  <div class="card leave-card">
-                      <div class="card-header">
-                          <b>${leave.type}</b>
-                      </div>
-                      <div class="card-body">
-                          <div class="progress">
-                              <div class="progress-bar bg-light" style="width: 100%"></div>
-                              <div
-                                  class="progress-bar ${leave.color}"
-                                  role="progressbar"
-                                  style="width: ${leave.progress}%"
-                                  aria-valuenow="${leave.progress}"
-                                  aria-valuemin="0"
-                                  aria-valuemax="100"
-                              >
-                                  <span class="progress-text">${leave.taken}/${leave.total} Days Taken</span>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          `).join('')}
-      </div>
-  `;
-
-  // document.getElementsByClassName('content')[0].innerHTML = '';
-
-  // Append the leave summary to the content element
-  tableBody.appendChild(leaveSummary);
-}
-
-
 function fetchUpcomingHolidays() {
   fetch("http://localhost:8080/api/leave_management/holidays", {
     method: "GET",
     headers: {
-      "Content-Type": "application/json" // Headers should be an object
+      "Content-Type": "application/json"
     }
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`); // Use backticks for template literals
+        throw new Error(`HTTP error! Status: ${response.status}`); 
       }
       return response.json();
     })
     .then(data => {
-      // console.log("Data:", data);
 
-      // Example of how you might display the holidays on the page
-      const holidaysContainer = document.getElementById('holidaysContainer'); // Ensure you have an element with this ID in your HTML
+      console.log("Data:", data);
+
+      const holidaysContainer = document.getElementById('holidaysContainer');
 
       if (!holidaysContainer) {
         console.error('Element with ID "holidaysContainer" not found.');
         return;
       }
 
-      // Clear any existing content
       holidaysContainer.innerHTML = '';
 
-      // Generate HTML for each holiday
       data.forEach(holiday => {
         const holidayElement = document.createElement('div');
         holidayElement.className = 'holiday mt-2';
-
-        console.log(holiday);
-
 
         holidayElement.innerHTML = `
       <div class="holiday-card">
@@ -488,6 +319,7 @@ function fetchUpcomingHolidays() {
 }
 
 
+var gender = "";
 
 function displayAccounInfo() {
 
@@ -506,16 +338,16 @@ function displayAccounInfo() {
       return response.json();
     })
     .then(response => {
+
       console.log(response);
 
 
       gender = response.gender;
-      console.log("gender in acc : ",gender);
-      
+      console.log("gender in acc : ", gender);
+
+      updateLeaveOptions(gender);
 
       document.getElementById("userName").textContent = `${response.employeeName}`;
-
-      // document.getElementById("Welcome-title").innerHTML = `<b>Welcome ${response.employeeName} </b>`;
 
       document.getElementById('employeeName').innerHTML = `<b>Name: ${response.employeeName} </b>`;
       document.getElementById('employeeId').innerHTML = `<b>Employee Id: ${response.employeeId} </b>`;
@@ -532,9 +364,187 @@ function displayAccounInfo() {
 }
 
 
+
+const leaveTypeSelect = document.getElementById('leaveType');
+
+function updateLeaveOptions(gender) {
+  const paternityOption = leaveTypeSelect.querySelector('option[value="Paternity Leave"]');
+  const maternityOption = leaveTypeSelect.querySelector('option[value="Maternity Leave"]');
+
+  if (gender === 'Male') {
+    paternityOption.style.display = '';
+    maternityOption.style.display = 'none';
+  } else if (gender === 'Female') {
+    paternityOption.style.display = 'none';
+    maternityOption.style.display = '';
+  } else {
+    paternityOption.style.display = '';
+    maternityOption.style.display = '';
+  }
+}
+
+
+
+function applyLeave() {
+
+  console.log("gender in apply leave", gender);
+  const leaveType = document.getElementById("leaveType").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
+  const leaveDescription = document.getElementById("leaveDescription").value;
+
+  const maternityLeave = document.getElementById("maternityLeave");
+  const paternityLeave = document.getElementById("PaternityLeave");
+
+  if (!leaveType) {
+    alert("Leave type cannot be empty");
+    return;
+  }
+
+  if (!fromDate || !toDate) {
+    alert("Date cannot be empty");
+    return;
+  }
+
+  const now = new Date();
+  const currentDate = now.toISOString().split("T")[0];
+
+  if (toDate < currentDate) {
+    alert("To date should be in the future, not in the past.");
+    return;
+  }
+
+
+  const leave = {
+    leaveType,
+    fromDate,
+    toDate,
+    leaveDescription,
+    appliedOn: currentDate,
+    statusOfLeave: "Pending"
+  };
+
+  console.log(JSON.stringify(leave));
+
+  fetch("api/leave_management/my_leaves_tracker", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(leave),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Network response was not ok: ${text}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Success:", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("There was an error processing your request. " + error.message);
+    });
+
+  document.getElementById("leaveType").value = "";
+  document.getElementById("fromDate").value = "";
+  document.getElementById("toDate").value = "";
+  document.getElementById("leaveDescription").value = "";
+
+}
+
+
+function fetchDashboard() {
+  hideContainer();
+
+  console.log("Gender : ", gender);
+
+  const dashboardUrl = "http://localhost:8080/api/leave_management/dashboard";
+
+  fetch(dashboardUrl, { method: "GET" })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+
+      if(data.length === 0){
+        displayNoData("No leaves taken");
+        return ;
+      }
+
+      console.log(data);
+
+      const leaveTypes = data; 
+
+      const leaveTypeColorMap = {
+        'Annual Leave': 'bg-success',
+        'Sick Leave': 'bg-warning',
+        'Casual Leave': 'bg-info',
+        'Maternity Leave': 'bg-primary',
+        'Paternity Leave': 'bg-primary',
+        'Emergency Leave': 'bg-secondary',
+      };
+
+
+      leaveTypes.forEach(leave => {
+        leave.progress = Math.min((leave.daysTaken / leave.allowedDays) * 100, 100);
+        leave.color = leaveTypeColorMap[leave.type];
+      })
+
+      console.log(leaveTypes);
+
+
+      document.getElementById("content-title").textContent = "My Leave Tracker";
+
+      const tableBody = document.querySelector('#leaves-list tbody');
+      tableBody.innerHTML = '';
+
+      const leaveSummary = document.createElement('tr');
+
+      leaveSummary.innerHTML = `
+      <div class="row">
+          ${leaveTypes.map(leave => `
+              <div class="col-md-6 col-lg-4">
+                  <div class="card leave-card">
+                      <div class="card-header">
+                          <b>${leave.leaveType}</b>
+                      </div>
+                      <div class="card-body">
+                          <div class="progress">
+                              <div class="progress-bar bg-light" style="width: 100%"></div>
+                              <div
+                                  class="progress-bar ${leave.color}"
+                                  role="progressbar"
+                                  style="width: ${leave.progress}%"
+                                  aria-valuenow="${leave.progress}"
+                                  aria-valuemin="0"
+                                  aria-valuemax="100"
+                              >
+                                  <span class="progress-text">${leave.daysTaken}/${leave.allowedDays} Days Taken</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          `).join('')
+        }
+      </div>
+        `;
+      tableBody.appendChild(leaveSummary);
+    })
+
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+}
+
+
 function logout() {
-
-
   const logoutUrl = "http://localhost:8080/api/leave_management/logout";
 
   fetch(logoutUrl, {
@@ -550,7 +560,7 @@ function logout() {
       console.log('Response data:', data);
 
       if (data.status === 'success') {
-        window.location.href = 'http://localhost:8080/api/leave_management/index.html'; // Redirect on success
+        window.location.href = 'http://localhost:8080/api/leave_management/index.html'; 
       } else {
         alert('Error logging out: ' + data.message);
       }
@@ -562,14 +572,16 @@ function logout() {
 }
 
 
+// to hide welcome 
 function hideContainer() {
   const welcomeContainer = document.querySelector(".welcome-container");
   if (welcomeContainer) {
-    welcomeContainer.style.display = "none"; // Hides the container
+    welcomeContainer.style.display = "none"; 
   }
 }
 
 
+// to display when no data available
 function displayNoData(message) {
   const noDataDiv = document.createElement('div');
   noDataDiv.className = 'no-data';

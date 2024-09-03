@@ -11,26 +11,33 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebServlet(urlPatterns = "/dashboard")
-public class LeavesSummaryDashboardController extends HttpServlet {
-    private static LeavesService leavesService = null;
+@WebServlet(urlPatterns = "/askConfirmation")
+public class ConfirmationByLeaveTypeController extends HttpServlet {
+
+    private static ServiceFactory serviceFactory;
+    private static LeavesService leavesService;
+
 
     @Override
     public void init() throws ServletException {
-        ServiceFactory serviceFactory = new ServiceFactory();
+        serviceFactory = new ServiceFactory();
         leavesService = serviceFactory.getLeavesService("LeavesService");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         HttpSession httpSession = request.getSession(false);
-
-        String emailID = (String) httpSession.getAttribute("emailId");
-
-        String leavesSummaryJson = leavesService.getMyLeavesSummary(emailID);
+        if (httpSession == null) {
+            response.sendRedirect(request.getContextPath() + "/homepage.html");
+            return;
+        }
+        int employeeId = Integer.parseInt(request.getParameter("employeeId"));
+        String leaveType = request.getParameter("leaveType");
+        String result = leavesService.leaveTakenByLeaveType(employeeId, leaveType);
 
         response.setContentType("application/json");
-        response.getWriter().write(leavesSummaryJson);
+        response.getWriter().write(result);
 
     }
 }

@@ -47,7 +47,6 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-
         // Checking if the user is logged in
         if (httpSession != null && httpSession.getAttribute("emailId") != null) {
             logger.info("User is logged in");
@@ -57,10 +56,8 @@ public class AuthenticationFilter implements Filter {
             httpResponse.sendRedirect(loginPage);
         }
 
-        if (path.endsWith("/leaveManagement_index.html") && httpSession == null) {
+        if (path.endsWith("/homepage.html") && httpSession == null) {
             httpResponse.sendRedirect(loginPage);
         }
-
-
     }
 }

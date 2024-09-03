@@ -27,7 +27,6 @@ public class DatabaseConnectionManager {
                 properties.load(inputStream);
 
             } catch (IOException ioException) {
-//                String exception = ioException.getMessage();
                 logger.error("Unable to load the database properties file");
                 logger.error("Error : {}", ioException.getMessage());
             }
@@ -39,7 +38,7 @@ public class DatabaseConnectionManager {
             );
 
         } catch (ClassNotFoundException | SQLException exception) {
-//            exception.printStackTrace();
+            exception.printStackTrace();
             logger.error("exception occurred : {}", exception.getMessage());
         }
 

@@ -6,4 +6,6 @@ public interface EmployeeRepository {
     int getEmployeeIdByEmailId(String emailId);
 
     String getAccountDetails(String emailId);
+
+    String getEmployeeGenderByEmployeeId(int employeeId);
 }

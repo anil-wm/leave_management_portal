@@ -17,6 +17,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
     private final Connection connection;
 
     private static final Logger logger = LoggerFactory.getLogger(HolidayRepositoryImpl.class);
+
     private final String getHolidaysQuery = "SELECT * FROM HOLIDAYS " +
             "WHERE HOLIDAY_DATE >= CURDATE() " +
             "ORDER BY HOLIDAY_DATE";
@@ -33,6 +34,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
     @Override
     public String getHolidays() {
+
         JSONArray holidaysJsonArray = new JSONArray();
         logger.info("Extracting all holidays from database");
         try {
@@ -54,7 +56,6 @@ public class HolidayRepositoryImpl implements HolidayRepository {
         } catch (SQLException e) {
             logger.error("Error occurred while extracting holidays from the table {}", e.getMessage());
             logger.error("Complete exception {}", String.valueOf(e.getNextException()));
-//            throw new RuntimeException(e);
         }
 
         return holidaysJsonArray.toString();
