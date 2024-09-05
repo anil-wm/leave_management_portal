@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/my_leaves_tracker", "/my_team_leave_requests"})
+@WebFilter(urlPatterns = {"/my_leaves_tracker", "/my_team_leave_requests", "/homepage.html",
+        "/dashboard", "/my_account", "/holidays", "/leaveConfirmation"})
 public class AuthenticationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
@@ -20,10 +21,6 @@ public class AuthenticationFilter implements Filter {
         logger.info("In init method of authentication filter");
     }
 
-    @Override
-    public void destroy() {
-        // Cleanup resources if needed
-    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -40,12 +37,18 @@ public class AuthenticationFilter implements Filter {
         logger.info("Login page path: {}", loginPage);
         logger.info("Request Path: {}", path);
 
+        if (path.endsWith("/homepage.html") && httpSession == null) {
+            httpResponse.sendRedirect(loginPage);
+            return;
+        }
+
         // Skip authentication
         if (path.endsWith("/logout.html") || path.endsWith("/logout")) {
             logger.info("Skipping authentication for public page");
             filterChain.doFilter(httpRequest, httpResponse);
             return;
         }
+
 
         // Checking if the user is logged in
         if (httpSession != null && httpSession.getAttribute("emailId") != null) {
@@ -55,9 +58,11 @@ public class AuthenticationFilter implements Filter {
             logger.info("User is not logged in, redirecting to login page");
             httpResponse.sendRedirect(loginPage);
         }
+    }
 
-        if (path.endsWith("/homepage.html") && httpSession == null) {
-            httpResponse.sendRedirect(loginPage);
-        }
+
+    @Override
+    public void destroy() {
+
     }
 }

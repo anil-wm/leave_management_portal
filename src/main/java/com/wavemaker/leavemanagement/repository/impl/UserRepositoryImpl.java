@@ -2,6 +2,7 @@ package com.wavemaker.leavemanagement.repository.impl;
 
 
 import com.wavemaker.leavemanagement.config.DatabaseConnectionManager;
+import com.wavemaker.leavemanagement.exception.ErrorResponse;
 import com.wavemaker.leavemanagement.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,28 +36,22 @@ public class UserRepositoryImpl implements UserRepository {
 
         try {
             logger.info("Checking if email exists in database: {}", emailId);
-
-            // Use PreparedStatement to prevent SQL injection
             PreparedStatement preparedStatement = connection.prepareStatement(emailExistsQuery);
             preparedStatement.setString(1, emailId);
-
-            // Execute the query and process the ResultSet
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                // If a result is found, email exists
                 logger.info("Email ID {} exists in the database", emailId);
                 return true;
             } else {
-                // No result found, email does not exist
+
                 logger.info("No such email ID {} exists in the database", emailId);
                 return false;
             }
         } catch (SQLException e) {
-            // Log and handle the exception
             logger.error("Error occurred while checking if email exists in the database ");
             logger.error("with query {}: {}", emailExistsQuery, e.getMessage());
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
     }
 
@@ -78,7 +73,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
         } catch (SQLException e) {
             logger.error("Error occurred while retrieving password for email ID {}: {}", emailId, e.getMessage());
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
 
         return password;

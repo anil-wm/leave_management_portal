@@ -46,6 +46,7 @@ public class LeavesController extends HttpServlet {
         response.getWriter().write(allLeaves);
     }
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession httpSession = request.getSession(false);
@@ -65,8 +66,9 @@ public class LeavesController extends HttpServlet {
         }
         String jsonData = sb.toString();
 
-//        // Save the user data to the database
         JSONObject jsonResponse = new JSONObject();
+
+        logger.info("data received : {} ", jsonData);
 
         String mailID = (String) httpSession.getAttribute("emailId");
         boolean result = leavesService.requestLeave(jsonData, mailID);
@@ -79,13 +81,12 @@ public class LeavesController extends HttpServlet {
             jsonResponse.put("status", "error");
         }
 
-        // Send JSON response back to the frontend
         response.getWriter().write(jsonResponse.toString());
 
     }
 
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
             String line;

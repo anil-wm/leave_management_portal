@@ -1,30 +1,28 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+
   const today = new Date();
-  const dateString = today.toISOString().split("T")[0];
+  const nextDay = new Date(today);
+  nextDay.setDate(today.getDate() + 1);
+  const dateString = nextDay.toISOString().split("T")[0];
+
   document.getElementById("fromDate").setAttribute("min", dateString);
   document.getElementById("toDate").setAttribute("min", dateString);
 
-  const closeButton = document.querySelector('#dialog .close');
-  if (closeButton) {
-      closeButton.addEventListener('click', closeDialog);
-  }
-
-  document.getElementById("account-info").addEventListener('click', displayAccounInfo());
+  displayAccounInfo();
 
 });
 
+document.getElementById("account-info").addEventListener('click', displayAccounInfo);
 
-function closeDialog() {
-  const dialog = document.getElementById('dialog');
-  if (dialog) {
-      dialog.style.display = 'none'; 
-  }
+const closeButton = document.querySelector('#dialog .close');
+if (closeButton) {
+  closeButton.addEventListener('submit', closeDialog);
 }
 
 
 function fetchLeaveRequests() {
-  
+
   const leaveRequestsUrl = "http://localhost:8080/api/leave_management/my_team_leave_requests";
 
   hideContainer();
@@ -39,7 +37,7 @@ function fetchLeaveRequests() {
 
       const tableBody = document.querySelector('#leaves-list tbody');
 
-      tableBody.innerHTML = ''; 
+      tableBody.innerHTML = '';
       // console.log(data);
 
       if (data.length === 0) {
@@ -51,6 +49,7 @@ function fetchLeaveRequests() {
                   <th>Employee Name</th>
                  <!-- <th id="leave-id">Leave ID</th> -->
                   <th>Leave Type</th>
+                  <th>Applied on</th>
                   <th>From Date</th>
                   <th>To Date</th>
                   <th>Leave Description</th>
@@ -62,13 +61,14 @@ function fetchLeaveRequests() {
 
         data.forEach(request => {
 
-          const daysRequested = calculateDaysBetween(request.fromDate, request.toDate);
+          const daysRequested = calculateWeekdaysBetween(request.fromDate, request.toDate);
 
           const row = document.createElement('tr');
           row.innerHTML = `
                       <td>${request.employeeName}</td>
                      <!-- <td>${request.leaveId}</td> -->
                       <td>${request.leaveType}</td>
+                      <td>${request.appliedOn}</td>
                       <td>${request.fromDate}</td>
                       <td>${request.toDate}</td>
                       <td>${request.leaveDescription}</td>
@@ -93,12 +93,27 @@ function fetchLeaveRequests() {
 }
 
 
-function calculateDaysBetween(fromDateStr, toDateStr) {
+function calculateWeekdaysBetween(fromDateStr, toDateStr) {
   const fromDate = new Date(fromDateStr);
   const toDate = new Date(toDateStr);
-  const msPerDay = 24 * 60 * 60 * 1000; 
-  const diffInMs = toDate - fromDate;
-  return Math.ceil(diffInMs / msPerDay); 
+
+
+  if (fromDate > toDate) {
+    throw new Error("fromDate should be before or equal to toDate.");
+  }
+
+  let weekdayCount = 0;
+  let currentDate = new Date(fromDate);
+
+  while (currentDate <= toDate) {
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      weekdayCount++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return weekdayCount;
 }
 
 
@@ -118,7 +133,7 @@ async function askForConfirmation(leaveId, employeeId, leaveType, daysRequested)
 
     const queryString = new URLSearchParams(data).toString();
 
-    const response = await fetch(`http://localhost:8080/api/leave_management/askConfirmation?${queryString}`, {
+    const response = await fetch(`http://localhost:8080/api/leave_management/leaveConfirmation?${queryString}`, {
       method: 'GET'
     });
 
@@ -128,6 +143,7 @@ async function askForConfirmation(leaveId, employeeId, leaveType, daysRequested)
 
     const employeeLeave = await response.json();
     console.log(employeeLeave);
+
     const dialog = document.getElementById('dialog');
     const detailsDiv = document.getElementById('employeeDetails');
     detailsDiv.innerHTML = `
@@ -138,6 +154,11 @@ async function askForConfirmation(leaveId, employeeId, leaveType, daysRequested)
     `;
     dialog.style.display = 'block';
 
+    const closeDialog = document.getElementById('closeAction');
+
+    closeButton.addEventListener('click',()=>{
+      dialog.style.display = 'none';
+    })
 
     document.getElementById('approveButton').addEventListener('click', () => {
       updateStatus(leaveId, 'Approved');
@@ -156,6 +177,25 @@ async function askForConfirmation(leaveId, employeeId, leaveType, daysRequested)
   }
 
 }
+
+
+// function validationMessage(message){
+
+//   const dialog = document.getElementById('validation-dialog');
+//     const detailsDiv = document.getElementById('errorMessage');
+//     detailsDiv.innerHTML = `
+//         <p>Error: ${message}</p>
+//     `;
+//     dialog.style.display = 'block';
+
+//     const closeDialog = document.getElementById('closevalidationDialog');
+
+//     closeDialog.addEventListener('click',()=>{
+//       dialog.style.display = 'none';
+//     })
+// }
+
+
 
 
 async function updateStatus(leaveId, status) {
@@ -186,9 +226,9 @@ async function updateStatus(leaveId, status) {
 }
 
 
-const myLeavesUrl = 'http://localhost:8080/api/leave_management/my_leaves_tracker';
 
 async function fetchMyLeaves() {
+  const myLeavesUrl = 'http://localhost:8080/api/leave_management/my_leaves_tracker';
 
 
   hideContainer();
@@ -218,7 +258,8 @@ async function fetchMyLeaves() {
     const tableHeader = document.createElement('tr');
     tableHeader.innerHTML = `
       <th>Leave Type</th>
-      <th>Request Date</th>
+      <th>Applied on</th>
+       <th>From Date</th>
       <th>To Date</th>
       <th>Leave Description</th>
       <th>Status</th>
@@ -230,6 +271,7 @@ async function fetchMyLeaves() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${escapeHtml(leave.leaveType)}</td>
+        <td>${escapeHtml(leave.appliedOn)}</td>
         <td>${escapeHtml(leave.fromDate)}</td>
         <td>${escapeHtml(leave.toDate)}</td>
         <td>${escapeHtml(leave.leaveDescription)}</td>
@@ -241,6 +283,7 @@ async function fetchMyLeaves() {
     console.error('Error fetching my leaves:', error);
   }
 }
+
 
 function escapeHtml(text) {
   const map = {
@@ -275,7 +318,7 @@ function fetchUpcomingHolidays() {
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`); 
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
       return response.json();
     })
@@ -320,6 +363,8 @@ function fetchUpcomingHolidays() {
 
 
 var gender = "";
+var manager_name;
+var employee_name;
 
 function displayAccounInfo() {
 
@@ -339,11 +384,11 @@ function displayAccounInfo() {
     })
     .then(response => {
 
-      console.log(response);
+      // console.log(response);
 
 
       gender = response.gender;
-      console.log("gender in acc : ", gender);
+      // console.log("gender in acc : ", gender);
 
       updateLeaveOptions(gender);
 
@@ -353,6 +398,17 @@ function displayAccounInfo() {
       document.getElementById('employeeId').innerHTML = `<b>Employee Id: ${response.employeeId} </b>`;
       document.getElementById('myMobileNumber').innerHTML = `<b>Mobile Number: ${response.mobileNumber} </b>`;
       document.getElementById('myEmailId').innerHTML = `<b>Email Id: ${response.emailId} </b>`;
+
+      employee_name = response.employeeName;
+      manager_name = response.managerName;
+
+      if (employee_name === manager_name) {
+        var button = document.querySelector(".apply-leave-btn");
+        if (button) {
+          button.style.display = 'none';
+        }
+      }
+
       if (response.employeeName !== response.managerName) {
         document.getElementById('myMangerName').innerHTML = `<b>Reports to: ${response.managerName} </b>`;
       }
@@ -362,6 +418,7 @@ function displayAccounInfo() {
       console.error('Error:', error);
     });
 }
+
 
 
 
@@ -393,10 +450,8 @@ function applyLeave() {
   const toDate = document.getElementById("toDate").value;
   const leaveDescription = document.getElementById("leaveDescription").value;
 
-  const maternityLeave = document.getElementById("maternityLeave");
-  const paternityLeave = document.getElementById("PaternityLeave");
-
   if (!leaveType) {
+
     alert("Leave type cannot be empty");
     return;
   }
@@ -409,11 +464,13 @@ function applyLeave() {
   const now = new Date();
   const currentDate = now.toISOString().split("T")[0];
 
-  if (toDate < currentDate) {
-    alert("To date should be in the future, not in the past.");
+
+  if (toDate < fromDate) {
+    alert("To date should be after from date");
     return;
   }
 
+  document.querySelector('#requestsModal').click();
 
   const leave = {
     leaveType,
@@ -426,7 +483,7 @@ function applyLeave() {
 
   console.log(JSON.stringify(leave));
 
-  fetch("api/leave_management/my_leaves_tracker", {
+  fetch("http://localhost:8080/api/leave_management/my_leaves_tracker", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -453,6 +510,7 @@ function applyLeave() {
   document.getElementById("toDate").value = "";
   document.getElementById("leaveDescription").value = "";
 
+
 }
 
 
@@ -463,7 +521,7 @@ function fetchDashboard() {
 
   const dashboardUrl = "http://localhost:8080/api/leave_management/dashboard";
 
-  fetch(dashboardUrl, { method: "GET" })
+   fetch(dashboardUrl, { method: "GET" })
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -472,14 +530,14 @@ function fetchDashboard() {
     })
     .then(data => {
 
-      if(data.length === 0){
+      if (data.length === 0) {
         displayNoData("No leaves taken");
-        return ;
+        return;
       }
 
       console.log(data);
 
-      const leaveTypes = data; 
+      const leaveTypes = data;
 
       const leaveTypeColorMap = {
         'Annual Leave': 'bg-success',
@@ -493,7 +551,9 @@ function fetchDashboard() {
 
       leaveTypes.forEach(leave => {
         leave.progress = Math.min((leave.daysTaken / leave.allowedDays) * 100, 100);
-        leave.color = leaveTypeColorMap[leave.type];
+        leave.color = leaveTypeColorMap[leave.leaveType];
+        // console.log(leave.color,leaveTypeColorMap[leave.type]);
+        
       })
 
       console.log(leaveTypes);
@@ -505,28 +565,33 @@ function fetchDashboard() {
       tableBody.innerHTML = '';
 
       const leaveSummary = document.createElement('tr');
-
+      let space = " ";
       leaveSummary.innerHTML = `
       <div class="row">
           ${leaveTypes.map(leave => `
               <div class="col-md-6 col-lg-4">
-                  <div class="card leave-card">
+                  <div class="card leave-card mb-5 mt-2">
                       <div class="card-header">
                           <b>${leave.leaveType}</b>
                       </div>
                       <div class="card-body">
                           <div class="progress">
-                              <div class="progress-bar bg-light" style="width: 100%"></div>
-                              <div
-                                  class="progress-bar ${leave.color}"
+                              
+                              <div class="progress-bar w-100 bg-light text-dark">
+                                   <div
+                                  class="progress-bar bg-success"
                                   role="progressbar"
                                   style="width: ${leave.progress}%"
                                   aria-valuenow="${leave.progress}"
                                   aria-valuemin="0"
                                   aria-valuemax="100"
                               >
-                                  <span class="progress-text">${leave.daysTaken}/${leave.allowedDays} Days Taken</span>
+                                   
                               </div>
+                                   ${leave.daysTaken}/${leave.allowedDays} Days Taken
+                              </div>
+                             
+                              
                           </div>
                       </div>
                   </div>
@@ -535,6 +600,8 @@ function fetchDashboard() {
         }
       </div>
         `;
+        // console.log(leaveSummary);
+        
       tableBody.appendChild(leaveSummary);
     })
 
@@ -560,7 +627,7 @@ function logout() {
       console.log('Response data:', data);
 
       if (data.status === 'success') {
-        window.location.href = 'http://localhost:8080/api/leave_management/index.html'; 
+        window.location.href = 'http://localhost:8080/api/leave_management/index.html';
       } else {
         alert('Error logging out: ' + data.message);
       }
@@ -576,10 +643,17 @@ function logout() {
 function hideContainer() {
   const welcomeContainer = document.querySelector(".welcome-container");
   if (welcomeContainer) {
-    welcomeContainer.style.display = "none"; 
+    welcomeContainer.style.display = "none";
   }
 }
 
+
+function closeDialog() {
+  const dialog = document.getElementById('dialog');
+  if (dialog) {
+    dialog.style.display = 'none';
+  }
+}
 
 // to display when no data available
 function displayNoData(message) {

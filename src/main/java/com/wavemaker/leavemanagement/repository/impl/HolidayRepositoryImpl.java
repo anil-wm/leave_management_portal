@@ -1,6 +1,7 @@
 package com.wavemaker.leavemanagement.repository.impl;
 
 import com.wavemaker.leavemanagement.config.DatabaseConnectionManager;
+import com.wavemaker.leavemanagement.exception.ErrorResponse;
 import com.wavemaker.leavemanagement.repository.HolidayRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -56,6 +57,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
         } catch (SQLException e) {
             logger.error("Error occurred while extracting holidays from the table {}", e.getMessage());
             logger.error("Complete exception {}", String.valueOf(e.getNextException()));
+            throw new ErrorResponse(e.getMessage());
         }
 
         return holidaysJsonArray.toString();

@@ -1,6 +1,7 @@
 package com.wavemaker.leavemanagement.repository.impl;
 
 import com.wavemaker.leavemanagement.config.DatabaseConnectionManager;
+import com.wavemaker.leavemanagement.exception.ErrorResponse;
 import com.wavemaker.leavemanagement.factory.RepositoryFactory;
 import com.wavemaker.leavemanagement.model.Leave;
 import com.wavemaker.leavemanagement.repository.EmployeeRepository;
@@ -11,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,7 +29,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             " JOIN EMPLOYEES E" +
             " ON E.EMPLOYEE_ID = L.EMPLOYEE_ID" +
             " WHERE E.MANAGER_ID = ?" +
-            " ORDER BY L.FROM_DATE;";
+            " ORDER BY CASE WHEN L.STATUS_OF_LEAVE = 'Pending' THEN 1 ELSE 2 END, L.LEAVE_ID;";
 
     private final String getAllLeavesQuery = "SELECT * FROM LEAVES WHERE EMPLOYEE_ID= ?";
 
@@ -39,38 +42,40 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             "    E.EMPLOYEE_ID, " +
             "    E.EMPLOYEE_NAME, " +
             "    LT.LEAVE_TYPE, " +
-            "    SUM(DATEDIFF(L.TO_DATE, L.FROM_DATE) + 1) AS TOTAL_DAYS_TAKEN, " +
+            "    L.TO_DATE, L.FROM_DATE, " +
             "    LT.ALLOWED_DAYS " +
             "  FROM " +
             "    LEAVES L " +
             " JOIN " +
-            "    LEAVETYPES LT ON L.LEAVE_TYPE = LT.LEAVE_TYPE " +
+            "    LEAVE_TYPES LT ON L.LEAVE_TYPE = LT.LEAVE_TYPE " +
             " JOIN " +
             "    EMPLOYEES E ON L.EMPLOYEE_ID = E.EMPLOYEE_ID " +
             " WHERE " +
             "    E.EMPLOYEE_ID = ? AND " +
             "    L.STATUS_OF_LEAVE = 'APPROVED'" +
             "    GROUP BY " +
-            "    E.EMPLOYEE_ID, E.EMPLOYEE_NAME, LT.LEAVE_TYPE, LT.ALLOWED_DAYS " +
+            "    E.EMPLOYEE_ID, E.EMPLOYEE_NAME, LT.LEAVE_TYPE, LT.ALLOWED_DAYS, L.FROM_DATE, L.TO_DATE " +
             " ORDER BY " +
             "    LT.LEAVE_TYPE;";
 
-    private final String leavesTypesWithAllowedDays = "SELECT * FROM LEAVETYPES";
+    private final String leavesTypesWithAllowedDays = "SELECT * FROM LEAVE_TYPES";
 
     String leavesTakenByLeaveTypeQuery = "SELECT" +
-            "    employee_id," +
-            "    leave_type," +
-            "    SUM(DATEDIFF(to_date, from_date) + 1) AS total_leaves_taken" +
+            "    EMPLOYEE_ID," +
+            "    LEAVE_TYPE," +
+            "    FROM_DATE, TO_DATE " +
             " FROM" +
-            "    leaves" +
+            "    LEAVES" +
             " WHERE" +
-            "    employee_id = ?" +
-            "    AND leave_type = ?" +
+            "    EMPLOYEE_ID = ?" +
+            "    AND LEAVE_TYPE = ?" +
             " GROUP BY" +
-            "    employee_id," +
-            "    leave_type;";
+            "    EMPLOYEE_ID," +
+            "   TO_DATE, " +
+            "   FROM_DATE,  " +
+            "    LEAVE_TYPE;";
 
-    String allowedDaysForLeaveType = "SELECT ALLOWED_DAYS FROM LEAVETYPES WHERE LEAVE_TYPE = ? ";
+    String allowedDaysForLeaveType = "SELECT ALLOWED_DAYS FROM LEAVE_TYPES WHERE LEAVE_TYPE = ? ";
 
 
     String updateLeaveStatusQuery = "UPDATE LEAVES SET STATUS_OF_LEAVE = ? WHERE LEAVE_ID = ?";
@@ -81,7 +86,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             this.connection = DatabaseConnectionManager.getInstance().getConnection();
         } catch (SQLException e) {
             logger.warn("Error in getting connection objet");
-            throw new RuntimeException(e);
+            throw new ErrorResponse("Error in getting connection objet");
         }
         employeeRepository = new RepositoryFactory().getEmployeeRepository("EmployeeRepository");
     }
@@ -119,7 +124,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
         } catch (Exception e) {
             logger.error("Error occurred while retrieving all leaves of an employee in database ");
             logger.error("with query {}: {}", getAllLeavesQuery, e.getMessage());
-
+            throw new ErrorResponse("Error occurred while retrieving all leaves of an employee in database");
         }
         return jsonArray.toString();
     }
@@ -141,7 +146,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
 
         } catch (SQLException e) {
             logger.error("error while requesting for a leave {}", e.getMessage());
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
     }
 
@@ -183,6 +188,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
         } catch (Exception e) {
             logger.error("Error occurred while retrieving all leaves requests of manager from database ");
             logger.error("with the query {}: {}", getAllLeavesRequestQuery, e.getMessage());
+            throw new ErrorResponse(e.getMessage());
         }
         logger.info("All my leaves summary {} ", jsonArray);
         return jsonArray.toString();
@@ -192,10 +198,10 @@ public class LeaveRepositoryImpl implements LeaveRepository {
     public String getMyLeavesSummary(int employeeId) {
 
         JSONArray jsonArray = new JSONArray();
-        Set<String> processedLeaveTypes = new HashSet<>(); // Track leave types to avoid duplicates
+        // Track leave types to avoid duplicates
+        Set<String> processedLeaveTypes = new HashSet<>();
 
         try {
-            // Query to get employee-specific leave data
             PreparedStatement preparedStatement = connection.prepareStatement(myLeavesSummaryQuery);
             preparedStatement.setInt(1, employeeId);
 
@@ -203,33 +209,31 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             String gender = employeeRepository.getEmployeeGenderByEmployeeId(employeeId);
-
+            int leavesTaken = 0;
             while (resultSet.next()) {
 
                 logger.info("In process of extracting leaves");
                 String leaveType = resultSet.getString("LEAVE_TYPE");
 
-
-                // Check if this leave type has already been processed
                 if (!processedLeaveTypes.contains(leaveType)) {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("employeeId", resultSet.getInt("EMPLOYEE_ID"));
                     jsonObject.put("leaveType", leaveType);
-                    jsonObject.put("daysTaken", resultSet.getInt("TOTAL_DAYS_TAKEN"));
+                    leavesTaken = countWeekdays(resultSet.getDate("FROM_DATE"),
+                            resultSet.getDate("TO_DATE"));
+                    jsonObject.put("daysTaken", leavesTaken);
                     jsonObject.put("allowedDays", resultSet.getInt("ALLOWED_DAYS"));
                     jsonArray.put(jsonObject);
                     processedLeaveTypes.add(leaveType);
                 }
             }
 
-            // Query to get general leave types with allowed days
             Statement statement = connection.createStatement();
             ResultSet resultSet1 = statement.executeQuery(leavesTypesWithAllowedDays);
 
             while (resultSet1.next()) {
                 String leaveType = resultSet1.getString("LEAVE_TYPE");
 
-                // Check if this leave type has already been processed
                 if (!processedLeaveTypes.contains(leaveType)) {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("leaveType", leaveType);
@@ -260,7 +264,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             statement.close();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
 
         logger.info("Returned my leaves summary as : {}", jsonArray);
@@ -283,7 +287,9 @@ public class LeaveRepositoryImpl implements LeaveRepository {
             resultSet = preparedStatement.executeQuery();
 
             resultSet.next();
-            leavesTaken = resultSet.getInt("total_leaves_taken");
+
+            leavesTaken = countWeekdays(resultSet.getDate("FROM_DATE"),
+                    resultSet.getDate("TO_DATE"));
 
             preparedStatement = connection.prepareStatement(allowedDaysForLeaveType);
             preparedStatement.setString(1, leaveType);
@@ -295,7 +301,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
 
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
 
         JSONObject jsonResponse = new JSONObject();
@@ -318,7 +324,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
 
             rowsAffected = preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ErrorResponse(e.getMessage());
         }
 
         JSONObject jsonResponse = new JSONObject();
@@ -332,4 +338,34 @@ public class LeaveRepositoryImpl implements LeaveRepository {
         }
         return jsonResponse.toString();
     }
+
+
+    public static int countWeekdays(Date startDate, Date endDate) {
+
+
+        Date sqlFromDate = Date.valueOf(String.valueOf(startDate));
+        Date sqlToDate = Date.valueOf(String.valueOf(endDate));
+
+        LocalDate fromDate = sqlFromDate.toLocalDate();
+        LocalDate toDate = sqlToDate.toLocalDate();
+
+        if (fromDate.isAfter(toDate)) {
+            throw new ErrorResponse("Start date must be before or equal to end date.");
+        }
+
+        int weekdays = 0;
+        LocalDate currentDate = fromDate;
+
+        while (!currentDate.isAfter(toDate)) {
+            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+            if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
+                weekdays++;
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return weekdays;
+    }
+
+
 }

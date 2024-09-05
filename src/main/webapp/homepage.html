@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leave Management</title>
 
+    <link rel="icon" href="assets/images/leave.jpg" type="image/x-icon" />
+
     <!-- Bootstrap CSS -->
     <link
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -27,15 +29,17 @@
 
         <button
           type="button"
-          class="btn btn-primary mx-2"
+          class="btn btn-primary mx-2 apply-leave-btn"
           data-toggle="modal"
           data-target="#requestsModal"
         >
           Apply Leave
         </button>
 
+        <a href="#" id="account-info">
 
-        <img src="assets/images/profile-icon.jpg" class="account-icon" id="account-info" alt="Account Icon" data-toggle="modal" data-target="#accountModal">
+          <img src="assets/images/profile-icon.jpg" class="account-icon"  alt="Account Icon" data-toggle="modal" data-target="#accountModal">
+        </a>
 
     
       </div>
@@ -209,14 +213,14 @@
                     <button
                       class="mx-5 btn btn-primary rounded-pill justify-content-center"
                       id="applyLeave"
+                      onclick="applyLeave()"
                     >
-                      Apply Leave
+                      Request Leave
                     </button>
                     <button
                       type="button"
                       class="btn btn-secondary"
                       data-dismiss="modal"
-                      onclick="applyLeave()"
                     >
                       Cancel
                     </button>
@@ -226,13 +230,30 @@
     </div>
 
     <div id="dialog" class="dialog">
-      <button type="button" class="close" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-      </button>
-      <div id="employeeDetails"></div>
+      <div>
+        <button type="button" class="close" aria-label="Close" id="closeAction">
+          <span aria-hidden="true" >&times;</span>
+        </button>
+      </div>
+      <div id="employeeDetails" class="mt-3" ></div>
       <button id="approveButton" class="btn btn-success">Approve</button>
       <button id="rejectButton" class="btn btn-danger">Reject</button>
   </div>
+  
+
+
+  <!-- <div id="validation-dialog" class="dialog">
+    <div>
+      <button type="button" class="close" aria-label="Close" id="closevalidationDialog">
+        <span aria-hidden="true" >&times;</span>
+      </button>
+    </div>
+  <div id="errorMessage" class="mt-3" ></div> -->
+   
+
+
+
+
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
