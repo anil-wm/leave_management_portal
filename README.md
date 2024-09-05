@@ -1,4 +1,35 @@
-# Leave Management Portal 
+# Leave Management Portal
+
+## Overview
+
+The Leave Management Portal is a web application designed to handle employee leave requests and approvals. This project utilizes Servlets for server-side processing and HTML, CSS, JavaScript, and Bootstrap for the front-end interface.
+
+## Technologies Used
+
+- **Java Servlets**: For server-side processing and handling requests.
+- **HTML**: For structuring the web pages.
+- **CSS**: For styling the web pages.
+- **JavaScript**: For client-side scripting and interactivity.
+- **Bootstrap**: For responsive design and UI components.
+- **Tomcat**: For running the Servlets.
+
+## Prerequisites
+
+- **Apache Tomcat**: Ensure that Tomcat is installed and properly configured on your machine.
+- **Java Development Kit (JDK)**: JDK 8 or later is required to compile and run the Servlets.
+- **IDE (Optional)**: An Integrated Development Environment like Eclipse or IntelliJ IDEA for easier development and deployment.
+
+## Setup Instructions
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/A-AnilKumar/leave_management_portal.git
+
+2. **Build the Project**
+    ```bash
+   mvn clean install
+
 
 # Features implemented
 
@@ -10,35 +41,38 @@
 6. Holidays
 7. Dashboard ( for my leave summary )
 8. User cannot select past date
+9. Calculated leaves requesting and taken by excluding weekends
+10. Leave type on gender based while applying to a leave
 
 
 
-![image](https://github.com/user-attachments/assets/b694f0a7-8bcc-4df6-b239-9fe4032cfc08)
-
-
-
-
-
-![image](https://github.com/user-attachments/assets/17a240a3-353a-4c13-800e-226839b0502c)
+![img.png](img.png)
 
 
 
 
-
-![image](https://github.com/user-attachments/assets/f864700d-713b-4d16-ab7f-f3f07a3980c4)
+![img_1.png](img_1.png)
 
 
 
 
 
-![image](https://github.com/user-attachments/assets/6dfd61ac-adbc-42d9-a05a-9acc71cbb634)
+![img_2.png](img_2.png)
 
 
 
 
 
-![image](https://github.com/user-attachments/assets/28ac0373-fbed-4356-89d4-5bcec02d1fc9)
+![img_3.png](img_3.png)
 
+
+![img_4.png](img_4.png)
+
+
+![img_5.png](img_5.png)
+
+
+![img_6.png](img_6.png)
 
 
 
@@ -46,10 +80,53 @@
 
 
 
-
-![image](https://github.com/user-attachments/assets/84389af5-5783-4ea1-95ec-1a16eb0ac677)
-
+![img_7.png](img_7.png)
 
 
+
+![img_8.png](img_8.png)
+
+
+
+![img_9.png](img_9.png)
+
+
+
+![img_10.png](img_10.png)
+
+
+ ![img_11.png](img_11.png)
  
- 
+
+
+![img_12.png](img_12.png)
+
+
+![img_13.png](img_13.png)
+
+
+![img_15.png](img_15.png)
+
+
+![img_14.png](img_14.png)
+
+
+![img_16.png](img_16.png)
+
+
+![img_18.png](img_18.png)
+
+
+![img_17.png](img_17.png)
+
+
+![img_19.png](img_19.png)
+
+
+![img_21.png](img_21.png)
+
+
+![img_20.png](img_20.png)
+
+
+
