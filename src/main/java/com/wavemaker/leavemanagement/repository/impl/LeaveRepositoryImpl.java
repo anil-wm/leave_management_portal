@@ -288,7 +288,7 @@ public class LeaveRepositoryImpl implements LeaveRepository {
 
             while(resultSet.next())
                 if(resultSet.getString("LEAVE_TYPE").equals("Approved"))
-                    leavesTaken = countWeekdays(resultSet.getDate("FROM_DATE"),
+                    leavesTaken += countWeekdays(resultSet.getDate("FROM_DATE"),
                                                 resultSet.getDate("TO_DATE"));
 
             preparedStatement = connection.prepareStatement(allowedDaysForLeaveType);
