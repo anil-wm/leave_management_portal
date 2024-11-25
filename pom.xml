@@ -54,6 +54,17 @@
     </dependency>
   </dependencies>
   <build>
+    <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.8.1</version> <!-- Specify the version of the plugin -->
+      <configuration>
+        <source>1.8</source>  <!-- Set Java version to 1.8 -->
+        <target>1.8</target>  <!-- Set Java version to 1.8 -->
+      </configuration>
+    </plugin>
+  </plugins>
     <finalName>LeaveManagement</finalName>
   </build>
 </project>
