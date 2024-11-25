@@ -7,6 +7,7 @@ pipeline {
                 echo 'Building the project with Maven'
                 sh ''' 
                     mvn --version 
+                    pwd
                     chmod -R o+rwx .
                     mvn clean install 
                     '''
