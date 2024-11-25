@@ -7,18 +7,16 @@ pipeline {
                 echo 'Building the project with Maven'
                 sh ''' 
                     mvn --version 
-                    pwd
-                    chmod -R o+rwx .
                     mvn clean install 
                     '''
             }
         }
-            stage('Deploy to tomcat'){
-                steps {
-                    echo 'Deploying application to Tomcat'
-                    sh ''' cp target/*.war /usr/local/tomcat/webapps/ 
-                           catalina.sh run ''' 
-                }
-            }
+            // stage('Deploy to tomcat'){
+            //     steps {
+            //         echo 'Deploying application to Tomcat'
+            //         sh ''' cp target/*.war /usr/local/tomcat/webapps/ 
+            //                catalina.sh run ''' 
+            //     }
+            // }
     }
 }
