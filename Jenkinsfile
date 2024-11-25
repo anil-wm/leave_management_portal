@@ -10,12 +10,13 @@ pipeline {
                     mvn clean install 
                     '''
             }
+        }
             stage('Deploy to tomcat'){
                 steps {
                     echo 'Deploying application to Tomcat'
-                    sh 'cp target/*.war /usr/local/tomcat/webapps/'
-                    sh 'catalina.sh run'
-                    
-        }
+                    sh ''' cp target/*.war /usr/local/tomcat/webapps/ 
+                           catalina.sh run ''' 
+                }
+            }
     }
 }
