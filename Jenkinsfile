@@ -12,12 +12,12 @@ pipeline {
                     '''
             }
         }
-            // stage('Deploy to tomcat'){
-            //     steps {
-            //         echo 'Deploying application to Tomcat'
-            //         sh ''' cp target/*.war /usr/local/tomcat/webapps/ 
-            //                catalina.sh run ''' 
-            //     }
-            // }
+            stage('Deploy to tomcat'){
+                steps {
+                    echo 'Deploying application to Tomcat'
+                    sh ''' cp target/*.war /usr/local/tomcat/webapps/ 
+                           catalina.sh run ''' 
+                }
+            }
     }
 }
