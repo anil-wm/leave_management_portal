@@ -10,6 +10,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+
+// Database connection
+
 public class DatabaseConnectionManager {
 
     private final Logger logger = LoggerFactory.getLogger(DatabaseConnectionManager.class);
